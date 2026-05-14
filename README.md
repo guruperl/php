@@ -16,9 +16,22 @@ which will install all the dependencies.
 
 Genelet uses _phpunit_ to run unit tests. Set up a database named _test_ with accessing account user *genelet_test* and blank password, run:
 ```
-phpunit --bootstrap vendor/autoload.php tests
+composer test
 ```
 which will run all the tests in the directory _tests_. Make sure they all passed.
+
+Without local PHP, Composer, or MySQL, run the isolated Docker harness instead:
+```
+./scripts/test-docker.sh
+```
+The script builds a PHP 8.3 test image, starts a disposable MySQL 8 container, installs Composer dependencies, lints `src/` and `tests/`, and runs PHPUnit.
+
+# Sample Application
+
+The former `genelet/project-php` sample application is available in `samples/project-php`. It uses this package through a local Composer path repository and has its own Docker/MySQL test harness:
+```
+./scripts/test-sample-project-php.sh
+```
 
 # Using Genelet 
 

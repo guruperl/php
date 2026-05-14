@@ -1,0 +1,8 @@
+.git
+vendor
+**/vendor
+composer.lock
+**/composer.lock
+debug.log
+**/var
+.phpunit.result.cache

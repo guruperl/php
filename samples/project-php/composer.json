@@ -1,0 +1,39 @@
+{
+    "name": "genelet/project-php",
+    "description": "Sample Application of Genelet Framework",
+    "license": "LGPL-2.1-only",
+    "type": "project",
+    "authors": [
+        {
+            "name": "Greetingland, LLC",
+            "email": "genelet@gmail.com"
+        }
+    ],
+    "require": {
+        "genelet/php": "dev-master"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../..",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "scripts": {
+        "test": "phpunit --bootstrap vendor/autoload.php tests"
+    },
+    "autoload": {
+        "psr-4" : {
+            "Tabilet\\" : "src/",
+            "Tabilet\\Admin\\" : "src/admin/",
+            "Tabilet\\Car\\" : "src/car/"
+        }
+    }
+}

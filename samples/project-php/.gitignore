@@ -1,0 +1,4 @@
+logs/
+var/
+composer.lock
+vendor/

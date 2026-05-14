@@ -1,0 +1,17 @@
+{
+	"actions" : {
+		"startnew" : {"groups":["p"],"options":["no_db", "no_method"]},
+		"insert" : {},
+		"edit" : {"groups":["p"]},
+		"update" : {},
+		"delete" : {},
+		"topics" : {"groups":["p"]}
+	},
+	"current_table" : "cars",
+	"current_key" : "ID",
+	"current_id_auto" : "ID",
+	"edit_pars"   : ["ID", "Trademark", "Model", "HP", "Liter", "Cyl", "TransmissSpeedCount", "TransmissAutomatic", "MPG_City", "MPG_Highway", "Category", "Description", "Hyperlink", "Price", "PictureName", "PictureSize", "PictureType", "PictureWidth", "PictureHeight", "Color"],
+	"insert_pars" : ["Trademark", "Model", "HP", "Liter", "Cyl", "TransmissSpeedCount", "TransmissAutomatic", "MPG_City", "MPG_Highway", "Category", "Description", "Hyperlink", "Price", "PictureName", "PictureSize", "PictureType", "PictureWidth", "PictureHeight", "Color"],
+	"update_pars" : ["ID", "Trademark", "Model", "HP", "Liter", "Cyl", "TransmissSpeedCount", "TransmissAutomatic", "MPG_City", "MPG_Highway", "Category", "Description", "Hyperlink", "Price", "PictureName", "PictureSize", "PictureType", "PictureWidth", "PictureHeight", "Color"],
+	"topics_pars" : ["ID", "Trademark", "Model", "HP", "Liter", "Cyl", "TransmissSpeedCount", "TransmissAutomatic", "MPG_City", "MPG_Highway", "Category", "Description", "Hyperlink", "Price", "PictureName", "PictureSize", "PictureType", "PictureWidth", "PictureHeight", "Color"]
+}

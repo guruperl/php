@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/http-vue-loader"></script>
+    <script src="genelet.js"></script>
+  </head>
+<body>
+
+<div id="app">
+<component v-bind:is="headerComponent"></component>
+<component v-bind:is="currentComponent" v-bind:names="names"></component>
+<component v-bind:is="footerComponent"></component>
+</div>
+
+<script>
+
+var $scope = new VueGenelet({
+    siteUrl: "/app.php", html: "vue", json: "json",
+    logins: "login", header: "header", footer: "footer",
+    role: "p", comp: "car", action: "topics",
+});
+$scope.start();
+
+var vm = new Vue({
+  el: '#app',
+  data : $scope,
+  components: {
+    'a-header': httpVueLoader('./a/header.vue'),
+    'a-footer': httpVueLoader('./a/footer.vue'),
+    'a-login' : httpVueLoader('./a/login.vue'),
+    'a-car-topics':httpVueLoader('./a/car/topics.vue'),
+
+    'p-header': httpVueLoader('./p/header.vue'),
+    'p-footer': httpVueLoader('./p/footer.vue'),
+    'p-car-topics':httpVueLoader('./p/car/topics.vue'),
+  }
+});
+vm.$scope = $scope;
+
+</script>
+
+</body>
+</html>
