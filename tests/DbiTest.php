@@ -108,6 +108,25 @@ final class DbiTest extends TestCase
         $this->assertEquals("ccc", $ARGS["x"]);
     }
 
+    public function testSelectErrorsUseStatementDetails(): void
+    {
+        $conf = new Config(json_decode(file_get_contents("conf/test.conf")));
+        $pdo = new \PDO(...$conf->db);
+        $dbi = new Dbi($pdo);
+
+        $lists = array();
+        $err = $dbi->Select_sql($lists, "SELECT ?", 1, 2);
+        $this->assertIsObject($err);
+        $this->assertEquals(1072, $err->error_code);
+        $this->assertStringContainsString("HY093", $err->error_string);
+
+        $lists = array();
+        $err = $dbi->Select_sql_label($lists, array("value"), "SELECT ?", 1, 2);
+        $this->assertIsObject($err);
+        $this->assertEquals(1072, $err->error_code);
+        $this->assertStringContainsString("HY093", $err->error_string);
+    }
+
     public function testDbiProcedure(): void
     {
         $conf = new Config(json_decode(file_get_contents("conf/test.conf")));

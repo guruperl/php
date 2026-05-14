@@ -231,6 +231,25 @@ final class ModelTest extends TestCase
         return json_decode($str);
     }
 
+    private function initUpdateNextpage(): object
+    {
+        $str = '{
+    "nextpages" : {
+        "update" : [
+            {"model":"tf", "action":"topics", "relate_item":{"id":"id"}}
+        ]
+    },
+    "current_table": "testing",
+    "current_key" : "id",
+    "current_id_auto" : "id",
+    "insert_pars" : ["x","y","z"],
+    "update_pars" : ["x","y","z","id"],
+    "edit_pars" : ["x","y","z","id"],
+    "topics_pars" : ["id","x"]
+    }';
+        return json_decode($str);
+    }
+
     public function testModelNextpages(): void
     {
         $conf = new Config(json_decode(file_get_contents("conf/test.conf")));
@@ -294,5 +313,57 @@ final class ModelTest extends TestCase
         $this->assertEquals("333", $items[1]["a"]);
         $items = $model->LISTS[7]["tf_topics"];
         $this->assertEquals(1, sizeof($items));
+    }
+
+    public function testModelUpdateRunsUpdateNextpages(): void
+    {
+        $conf = new Config(json_decode(file_get_contents("conf/test.conf")));
+        $pdo = new \PDO(...$conf->db);
+        $model = new Model($pdo, self::initUpdateNextpage());
+        $tf = new Model($pdo, self::init3());
+        $storage = ["tf" => $tf];
+
+        $err = $model->Exec_sql(
+            "drop table if exists testing_f"
+        );
+        $this->assertNull($err);
+        $err = $model->Exec_sql(
+            "drop table if exists testing"
+        );
+        $this->assertNull($err);
+        $err = $model->Exec_sql(
+            "create table testing (id int not null auto_increment, x varchar(255), y varchar(255), z varchar(255) default null, primary key (id)) ENGINE=InnoDB DEFAULT CHARSET=utf8"
+        );
+        $this->assertNull($err);
+        $err = $model->Exec_sql(
+            "create table testing_f (fid int not null auto_increment, id int not null, a varchar(255), primary key (fid), foreign key (id) references testing (id) on delete cascade) ENGINE=InnoDB DEFAULT CHARSET=utf8"
+        );
+        $this->assertNull($err);
+        $err = $model->Do_sql(
+            "INSERT INTO testing (id,x,y,z) VALUES (?,?,?,?)",
+            1,
+            "before",
+            "yyy",
+            "zzz"
+        );
+        $this->assertNull($err);
+        $err = $model->Do_sqls(
+            "INSERT INTO testing_f (id,a) VALUES (?,?)",
+            array(1, "first"),
+            array(1, "second")
+        );
+        $this->assertNull($err);
+
+        $args = array("id" => 1, "x" => "after");
+        $lists = array();
+        $other = array();
+        $model->Set_defaults($args, $lists, $other, $storage);
+        $err = $model->update();
+
+        $this->assertNull($err);
+        $this->assertEquals("after", $model->LISTS[0]["x"]);
+        $this->assertEquals(2, sizeof($model->LISTS[0]["tf_topics"]));
+        $this->assertEquals("first", $model->LISTS[0]["tf_topics"][0]["a"]);
+        $this->assertEquals("second", $model->LISTS[0]["tf_topics"][1]["a"]);
     }
 }

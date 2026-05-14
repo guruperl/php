@@ -7,6 +7,22 @@ namespace Genelet\Tests;
 use PHPUnit\Framework\TestCase;
 use Genelet\Access;
 
+class HeaderAccess extends Access
+{
+    private $headers;
+
+    public function __construct(object $c, string $rv, string $cv, array $headers)
+    {
+        parent::__construct($c, $rv, $cv);
+        $this->headers = $headers;
+    }
+
+    protected function requestHeaders(): array
+    {
+        return $this->headers;
+    }
+}
+
 final class AccessTest extends TestCase
 {
     public function testCreatedAccess(): void
@@ -108,5 +124,23 @@ final class AccessTest extends TestCase
         $this->assertEquals($fields[3], $ref["last_name"]);
         $this->assertEquals($fields[4], $ref["address"]);
         $this->assertEquals($fields[5], $ref["company"]);
+    }
+
+    public function testBearerAuthFromRequestHeadersFallback(): void
+    {
+        $config = json_decode(file_get_contents("conf/test.conf"));
+        $_SERVER["REQUEST_TIME"] = "0";
+        $_SERVER["REMOTE_ADDR"] = "192.168.29.30";
+        unset($_SERVER["Authorization"], $_SERVER["HTTP_AUTHORIZATION"]);
+        $_COOKIE = array();
+
+        $issuer = new Access($config, "m", "json");
+        $token = $issuer->Signature(array("aaaaa", "bbbbb", "ccccc", "ddddd", "eeeee"));
+
+        $gate = new HeaderAccess($config, "m", "json", array("authorization" => "Bearer " . $token));
+        $err = $gate->Verify_cookie();
+
+        $this->assertNull($err);
+        $this->assertEquals("aaaaa", $gate->Decoded["email"]);
     }
 }

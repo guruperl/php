@@ -6,6 +6,7 @@ namespace Genelet\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Genelet\Logger;
+use Psr\Log\LogLevel;
 
 final class LoggerTest extends TestCase
 {
@@ -41,5 +42,31 @@ final class LoggerTest extends TestCase
 		$logger->alert("this is alert");
 		$logger->emergency("this is emergency");
 		$this->assertTrue($logger->is_debug());
+	}
+
+	public function testLoggerAcceptsPsrLogLevelStrings(): void
+	{
+		$file = tempnam(sys_get_temp_dir(), "genelet-log-");
+		$logger = new Logger($file, LogLevel::DEBUG);
+
+		try {
+			$logger->log(LogLevel::INFO, "direct info");
+			$this->assertStringContainsString("[info ", file_get_contents($file));
+		} finally {
+			unlink($file);
+		}
+	}
+
+	public function testLoggerRejectsUnknownLevels(): void
+	{
+		$file = tempnam(sys_get_temp_dir(), "genelet-log-");
+		$logger = new Logger($file, LogLevel::DEBUG);
+
+		try {
+			$this->expectException(\InvalidArgumentException::class);
+			$logger->log("verbose", "message");
+		} finally {
+			unlink($file);
+		}
 	}
 }
