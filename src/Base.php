@@ -74,31 +74,17 @@ class Base extends Config
 
     public function Get_ip(): string
     {
-        if (isset($_SERVER['HTTP_CLIENT_IP'])) {
-            $ip = $_SERVER['HTTP_CLIENT_IP'];
-        } elseif (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        } else {
-            $ip = $_SERVER['REMOTE_ADDR'];
-        }
-        return $ip;
+        return AuthRequestHelper::clientIp($_SERVER);
     }
 
     public function Get_ua(): string
     {
-        return $_SERVER['HTTP_USER_AGENT'];
+        return AuthRequestHelper::userAgent($_SERVER);
     }
 
     private function _set_cookie(string $name, string $value, int $current): void
     {
-        if ($this->Is_public()) {
-            return;
-        }
-        $role = $this->role_obj;
-        $domain = empty($role->domain) ? $_SERVER["HTTP_HOST"] : $role->domain;
-        $_COOKIE["SET_COOKIE"][$name] = $value; // cli to get headers_list()
-        $exp = ($current > 0) ? $current + $role->duration : $current;
-        setcookie($name, $value, $exp, $role->path, $domain);
+        AuthRequestHelper::setCookie($this->Is_public(), $this->role_obj, $name, $value, $current, $_SERVER);
     }
 
     public function Set_cookie(string $name, string $value): void
@@ -119,9 +105,9 @@ class Base extends Config
     public function Handler_logout(): string
     {
         $role = $this->role_obj;
-        $this->Set_cookie_expire($role->surface);
-        $this->Set_cookie_expire($role->surface . "_");
-        $this->Set_cookie_expire($this->go_probe_name);
+        AuthRequestHelper::expireCookie($this->Is_public(), $role, $role->surface, $_SERVER);
+        AuthRequestHelper::expireCookie($this->Is_public(), $role, $role->surface . "_", $_SERVER);
+        AuthRequestHelper::expireCookie($this->Is_public(), $role, $this->go_probe_name, $_SERVER);
         return $role->logout;
     }
 

@@ -22,16 +22,7 @@ class Ticket extends Access
 
     protected function probe_value(string $input = null): string
     {
-        if (isset($_REQUEST[$this->go_uri_name])) {
-            return $_REQUEST[$this->go_uri_name];
-        }
-        foreach (explode("&", parse_url($_SERVER["REQUEST_URI"], PHP_URL_QUERY)) as $item) {
-            $len = strlen($this->go_uri_name);
-            if (substr($item, 0, $len + 1) == $this->go_uri_name . "=") {
-                return urldecode(substr($item, $len + 1));
-            }
-        }
-        return isset($input) ? $input : "/";
+        return AuthRequestHelper::probeValue($this->go_uri_name, $_SERVER, $_REQUEST, $input);
     }
 
     public function Basic(): ?Gerror
@@ -39,14 +30,8 @@ class Ticket extends Access
         $issuer = $this->Get_issuer();
         $cred = $issuer->credential;
 
-        $user = $_REQUEST[$cred[0]];
-        if (!empty($_SERVER['PHP_AUTH_USER'])) {
-            $user = $_SERVER['PHP_AUTH_USER'];
-            $this->basic = true;
-        }
-        $pw = $_REQUEST[$cred[1]];
-        if (!empty($_SERVER['PHP_AUTH_PW'])) {
-            $pw = $_SERVER['PHP_AUTH_PW'];
+        list($user, $pw, $isBasic) = AuthRequestHelper::basicCredentials($_SERVER, $_REQUEST, $cred[0], $cred[1]);
+        if ($isBasic) {
             $this->basic = true;
         }
 

@@ -120,22 +120,8 @@ class Access extends Base
         $role = $this->role_obj;
         $raw = "";
         if (empty($raws)) {
-            $header = null;
-            if (isset($_SERVER['Authorization'])) {
-                $header = trim($_SERVER["Authorization"]);
-            } else if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-                $header = trim($_SERVER["HTTP_AUTHORIZATION"]);
-            } elseif ($requestHeaders = $this->requestHeaders()) {
-                $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
-                if (isset($requestHeaders['Authorization'])) {
-                    $header = trim($requestHeaders['Authorization']);
-                }
-            }
-            if ($header != null && substr($header, 0, 7) == 'Bearer ') {
-                $raw = substr($header, 7);
-            } else if (!empty($_COOKIE[$role->surface])) {
-                $raw = $_COOKIE[$role->surface];
-            } else {
+            $raw = AuthRequestHelper::bearerToken($_SERVER, $_COOKIE, $this->requestHeaders(), $role->surface);
+            if ($raw === null) {
                 return new Gerror(1020);
             }
         } else {
@@ -187,7 +173,6 @@ class Access extends Base
 
     protected function requestHeaders(): array
     {
-        $headers = function_exists('apache_request_headers') ? apache_request_headers() : array();
-        return is_array($headers) ? $headers : array();
+        return AuthRequestHelper::requestHeaders();
     }
 }

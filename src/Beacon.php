@@ -62,19 +62,7 @@ class Beacon extends Controller
 			$this->headers["Cookie"] = $_COOKIE["SET_COOKIE"];
 			unset($_COOKIE["SET_COOKIE"]);
 		} else {
-			foreach ($cookies as $k => $v) {
-				if (stripos($v, "Location: ") === 0) {
-					$this->redirect = substr($v, 10);
-				}
-				if (stripos($v, "Set-Cookie: ") === 0) {
-					$cookie = substr($v, 12);
-					$parts = explode(";", $cookie, 2);
-					$item = explode("=", $parts[0], 2);
-					if (sizeof($item) === 2) {
-						$this->headers["Cookie"][$item[0]] = urldecode($item[1]);
-					}
-				}
-			}
+			AuthRequestHelper::mirrorSetCookiesFromHeaders($cookies, $this->headers["Cookie"], $this->redirect);
 		}
 	}
 

@@ -22,22 +22,27 @@ class Controller extends Config
     public function Run(): Response
     {
         // self::cross_domain();
-        if ($_SERVER["REQUEST_METHOD"] == "OPTIONS") {
+        $input = RequestInput::fromGlobals();
+        if ($input->requestMethod() == "OPTIONS") {
             return new Response(200);
         }
         $logger = $this->logger;
-        $logger->screen_start($_SERVER["REQUEST_METHOD"], $_SERVER["REQUEST_URI"], $_SERVER["REMOTE_ADDR"], $_SERVER['HTTP_USER_AGENT']);
-        if (empty($this->default_actions[$_SERVER["REQUEST_METHOD"]])) {
+        $logger->screen_start($input->requestMethod(), $input->requestUri(), $input->clientIp(), $input->userAgent());
+        if (empty($this->default_actions[$input->requestMethod()])) {
             $logger->info("request method not defined.");
             return new Response(405);
         }
-        foreach ($_REQUEST as $k => $v) {
+        $request = $input->request;
+        foreach ($request as $k => $v) {
             if ($v == "") {
-                unset($_REQUEST[$k]);
+                unset($request[$k]);
             }
         }
+        $input = new RequestInput($input->server, $request, $input->cookie, $input->headers, $input->body);
 
-        $context = RequestContext::fromGlobals($this);
+        $context = RequestContext::fromInput($this, $input);
+        $_SERVER["REQUEST_METHOD"] = $context->request_method;
+        $_REQUEST = $context->request;
         if (isset($context->error)) {
             $logger->info($context->error);
             return new Response($context->error->error_code);

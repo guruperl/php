@@ -72,5 +72,8 @@ final class BaseTest extends TestCase
         $base->Set_cookie("cname", "1234567", 1000);
         $str = $base->Handler_logout();
         $this->assertEquals("/", $str);
+        $this->assertEquals("0", $_COOKIE["SET_COOKIE"]["mc"]);
+        $this->assertEquals("0", $_COOKIE["SET_COOKIE"]["mc_"]);
+        $this->assertEquals("0", $_COOKIE["SET_COOKIE"]["go_probe"]);
     }
 }

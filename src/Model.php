@@ -80,156 +80,32 @@ class Model extends Crud
 
     private function Initialize(object $comp)
     {
-        $this->SORTBY = isset($comp->{"sortby"}) ? $comp->{"sortby"} : "sortby";
-        $this->SORTREVERSE = isset($comp->{"sortreverse"}) ? $comp->{"sortreverse"} : "sortreverse";
-        $this->PAGENO = isset($comp->{"pageno"}) ? $comp->{"pageno"} : "pageno";
-        $this->ROWCOUNT = isset($comp->{"rowcount"}) ? $comp->{"rowcount"} : "rowcount";
-        $this->TOTALNO = isset($comp->{"totalno"}) ? $comp->{"totalno"} : "totalno";
-        $this->MAXPAGENO = isset($comp->{"maxpageno"}) ? $comp->{"maxpageno"} : "maxpageno";
-        $this->FIELDS = isset($comp->{"fields"}) ? $comp->{"fields"} : "fields";
-        $this->EMPTIES = isset($comp->{"empties"}) ? $comp->{"empties"} : "empties";
-
-        if (isset($comp->{"nextpages"})) {
-            $this->Nextpages = array();
-            foreach ($comp->{"nextpages"} as $action => $obj_ms) {
-                $ms = array();
-                foreach ($obj_ms as $obj_m) {
-                    $table = array();
-                    foreach ($obj_m as $k => $v) {
-                        if ($k == "relate_item") {
-                            $table[$k] = array();
-                            foreach ($v as $kk => $vv) {
-                                $table[$k][$kk] = $vv;
-                            }
-                        } else {
-                            $table[$k] = $v;
-                        }
-                    }
-                    array_push($ms, $table);
-                }
-                $this->Nextpages[$action] = $ms;
-            }
-        }
-
-        $this->Current_table = $comp->{"current_table"};
-        if (isset($comp->{"current_tables"})) {
-            $this->Current_tables = array();
-            foreach ($comp->{"current_tables"} as $obj_tbl) {
-                $table = array();
-                foreach ($obj_tbl as $k => $v) {
-                    $table[$k] = $v;
-                }
-                array_push($this->Current_tables, $table);
-            }
-        }
-        if (isset($comp->{"current_key"})) {
-            $this->Current_key = $comp->{"current_key"};
-        }
-        if (isset($comp->{"current_id_auto"})) {
-            $this->Current_id_auto = $comp->{"current_id_auto"};
-        }
-        if (isset($comp->{"key_in"})) {
-            $this->Key_in = $comp->{"key_in"};
-        }
-        if (isset($comp->{"insert_pars"})) {
-            $this->Insert_pars = $comp->{"insert_pars"};
-        }
-        if (isset($comp->{"edit_pars"})) {
-            $this->Edit_pars = $comp->{"edit_pars"};
-        }
-        if (isset($comp->{"update_pars"})) {
-            $this->Update_pars = $comp->{"update_pars"};
-        }
-        if (isset($comp->{"insupd_pars"})) {
-            $this->Insupd_pars = $comp->{"insupd_pars"};
-        }
-        if (isset($comp->{"topics_pars"})) {
-            $this->Topics_pars = $comp->{"topics_pars"};
-        }
-
-        if (isset($comp->{"topics_hash"})) {
-            $this->Topics_hashpars = array();
-            foreach ($comp->{"topics_hash"} as $k => $v) {
-                $this->Topics_hashpars[$k] = $v;
-            }
-        }
-        $this->Total_force = 1;
-        if (isset($comp->{"total_force"})) {
-            $this->Total_force = $comp->{"total_force"};
-        }
+        ModelConfig::apply($this, $comp);
     }
 
     public function filtered_fields(array $pars): array
     {
-        $ARGS = $this->ARGS;
-        if (empty($ARGS[$this->FIELDS])) {
-            return $pars;
-        }
-        $in = $ARGS[$this->FIELDS];
-        $out = array();
-        if (gettype($in) == "array") {
-            foreach ($in as $val) {
-                if (array_search($val, $pars) !== false) {
-                    array_push($out, $val);
-                }
-            }
-        } elseif (array_search($in, $pars) !== false) {
-            array_push($out, $in);
-        }
-        return empty($out) ? $pars : $out;
+        return (new ModelInput($this))->filteredFields($pars);
     }
 
     private function get_fv(array $pars): array
     {
-        $ARGS = $this->ARGS;
-        $field_values = array();
-        $filted = $this->filtered_fields($pars);
-        foreach ($filted as $f) {
-            if (!empty($ARGS[$f])) {
-                $field_values[$f] = $ARGS[$f];
-            }
-        }
-        return $field_values;
+        return (new ModelInput($this))->fieldValues($pars);
     }
 
     public function properValue(string $v, array $extra = null): ?array
     {
-        $ARGS = $this->ARGS;
-        if ($extra !== null && isset($extra[$v])) {
-            return (gettype($extra[$v]) == "array") ? $extra[$v] : [$extra[$v]];
-        } elseif (isset($ARGS[$v])) {
-            return (gettype($ARGS[$v]) == "array") ? $ARGS[$v] : [$ARGS[$v]];
-        }
-        return null;
+        return (new ModelInput($this))->properValue($v, $extra);
     }
 
     public function properValues(array $vs, array $extra = null): ?array
     {
-        $ARGS = $this->ARGS;
-        $outs = array();
-        foreach ($vs as $v) {
-            if ($extra !== null && isset($extra[$v])) {
-                array_push($outs, $extra[$v]);
-            } elseif (isset($ARGS[$v])) {
-                array_push($outs, $ARGS[$v]);
-            } else {
-                return null;
-            }
-        }
-
-        return $outs;
+        return (new ModelInput($this))->properValues($vs, $extra);
     }
 
     public function get_id_val(array $extra = null): array
     {
-        $id = $this->Current_key;
-        $val = (gettype($id) == "array")
-            ? $this->properValues($id, $extra)
-            : $this->properValue($id, $extra);
-        if ($val == null) {
-            return array($id);
-        }
-        return array($id, $val);
+        return (new ModelInput($this))->idValue($extra);
     }
 
     public function topics(...$extra): ?Gerror
@@ -482,137 +358,26 @@ class Model extends Crud
 
     public function get_order_string(): string
     {
-        $ARGS = $this->ARGS;
-        $column = "";
-        if (isset($ARGS[$this->SORTBY])) {
-            $column = $ARGS[$this->SORTBY];
-        } elseif (isset($this->Current_tables)) {
-            $table = $this->Current_tables[0];
-            if (isset($table["sortby"])) {
-                $column = $table["sortby"];
-            } else {
-                $name = isset($table["alias"]) ? $table["alias"] : $table["name"];
-                $name .= ".";
-                $column = $name . ((gettype($this->Current_key) == "array") ? implode(", $name", $this->Current_key) : $this->Current_key);
-            }
-        } else {
-            $column = (gettype($this->Current_key) == "array") ? implode(", ", $this->Current_key) : $this->Current_key;
-        }
-
-        $order = "ORDER BY " . $column;
-        if (isset($ARGS[$this->SORTREVERSE])) {
-            $order .= " DESC";
-        }
-
-        if (isset($ARGS[$this->ROWCOUNT])) {
-            $rowcount = $ARGS[$this->ROWCOUNT];
-            $pageno = isset($ARGS[$this->PAGENO]) ? $ARGS[$this->PAGENO] : 1;
-            $order .= " LIMIT " . $rowcount . " OFFSET " . (($pageno - 1) * $rowcount);
-        }
-
-        if (strpos($order, ";") === false && strpos($order, "'") === false && strpos($order, '"') === false) {
-            return $order;
-        }
-
-        return "";
+        return ModelQueryOptions::orderString($this);
     }
 
     private function another_object(array &$item, array $page, ...$extra): ?Gerror
     {
-        $model = $page["model"];
-        if (empty($this->Storage)) {
-            return new Gerror(2013);
-        }
-        if (empty($this->Storage[$model])) {
-            return new Gerror(2014, $model);
-        }
-        $p = clone $this->Storage[$model];
-
-        $action = $page["action"];
-        $marker = $model . "_" . $action;
-        if (isset($page["alias"])) {
-            $marker = $page["alias"];
-        }
-        if (isset($page["ignore"]) && !empty($item[$marker])) {
-            return null;
-        }
-
-        $args = array();
-        foreach ($this->ARGS as $k => $v) {
-            if ($k == "sortby" || $k == "sortreverse") {
-                continue;
-            }
-            $args[$k] = $v;
-        }
-
-        if (isset($page["manual"])) {
-            if (empty($extra)) {
-                $extra = array($page["manual"]);
-            } else {
-                foreach ($page["manual"] as $k => $v) {
-                    $extra[0][$k] = $v;
-                }
-            }
-        }
-
-        $lists = array();
-        $other = array();
-        $p->Set_defaults($args, $lists, $other, $this->Storage, $this->logger);
-        $err = $p->$action(...$extra);
-        if ($err !== null) {
-            return $err;
-        }
-        if (!empty($p->LISTS)) {
-            $item[$marker] = $p->LISTS;
-        }
-        if (!empty($p->OTHER)) {
-            foreach ($p->OTHER as $k => $v) {
-                $this->OTHER[$k] = $v;
-            }
-        }
-        return null;
+        return (new ModelNextpageProcessor($this))->anotherObject($item, $page, ...$extra);
     }
 
     public function call_once(array $page, ...$extra): ?Gerror
     {
-        return $this->another_object($this->OTHER, $page, ...$extra);
+        return (new ModelNextpageProcessor($this))->callOnce($page, ...$extra);
     }
 
     public function call_nextpage(array $page, ...$extra): ?Gerror
     {
-        if (empty($this->LISTS)) {
-            return null;
-        }
-
-        foreach ($this->LISTS as $i => $item) {
-            foreach ($page["relate_item"] as $k => $v) {
-                if (!empty($item[$k])) {
-                    $extra[0][$v] = $item[$k];
-                }
-            }
-            $err = $this->another_object($this->LISTS[$i], $page, ...$extra);
-            if ($err !== null) {
-                return $err;
-            }
-        }
-
-        return null;
+        return (new ModelNextpageProcessor($this))->callNextpage($page, ...$extra);
     }
 
     public function process_after(string $action, ...$extra): ?Gerror
     {
-        if (empty($this->Nextpages) || empty($this->Nextpages[$action])) {
-            return null;
-        }
-        foreach ($this->Nextpages[$action] as $k => $page) {
-            if (!empty($extra)) {
-                array_shift($extra);
-            }
-            $err = (empty($page["relate_item"])) ? $this->call_once($page, ...$extra) : $this->call_nextpage($page, ...$extra);
-            if ($err !== null) {
-                return $err;
-            }
-        }
-        return null;
+        return (new ModelNextpageProcessor($this))->processAfter($action, ...$extra);
     }
 }

@@ -69,11 +69,7 @@ class Procedure extends Ticket
 
     public function Callback_address(): string
     {
-        $http = "http";
-        if (isset($_SERVER["HTTPS"])) {
-            $http .= "s";
-        }
-        return $http . "://" . $_SERVER["HTTP_HOST"] . $this->script . "/" . $this->Role_name . "/" . $this->Tag_name . "/" . $this->Provider;
+        return AuthRequestHelper::callbackAddress($_SERVER, $this->script, $this->Role_name, $this->Tag_name, $this->Provider);
     }
 
     public function Fill_provider(array $back): ?Gerror

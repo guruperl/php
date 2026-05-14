@@ -27,11 +27,53 @@ class Dbi
         return implode("; ", $sth->errorInfo());
     }
 
-    public function Exec_sql(string $sql): ?Gerror
+    private function logSql(string $sql, array $args = null): void
     {
         if (isset($this->logger)) {
-            $this->logger->info($sql);
+            if ($args === null) {
+                $this->logger->info($sql);
+            } else {
+                $this->logger->info($sql, $args);
+            }
         }
+    }
+
+    private function prepareStatement(string $sql, array $args = array(), array $options = array()): array
+    {
+        $this->logSql($sql, $args);
+        $sth = empty($options) ? $this->Conn->prepare($sql) : $this->Conn->prepare($sql, $options);
+        if ($sth === false) {
+            return array(null, new Gerror(1071, $this->errstr()));
+        }
+        return array($sth, null);
+    }
+
+    private function executeStatement(object $sth, array $args): ?Gerror
+    {
+        $result = @$sth->execute($args);
+        if ($result === false) {
+            $message = self::errsmt($sth);
+            $sth->closeCursor();
+            return new Gerror(1072, $message);
+        }
+        return null;
+    }
+
+    private function buildCallSql(string $proc_name, int $arg_count, array $names = null): array
+    {
+        $str = "CALL " . $proc_name . "(" . implode(',', array_fill(0, $arg_count, '?'));
+        if ($names === null) {
+            $str .= ")";
+            return array($str, null);
+        }
+        $str_n = "@" . implode(", @", $names);
+        $str .= ", " . $str_n . ")";
+        return array($str, "SELECT " . $str_n);
+    }
+
+    public function Exec_sql(string $sql): ?Gerror
+    {
+        $this->logSql($sql);
         $n = $this->Conn->exec($sql);
         if ($n === false) {
             return new Gerror(1071, $this->errstr());
@@ -42,16 +84,13 @@ class Dbi
 
     public function Do_sql(string $sql, ...$args): ?Gerror
     {
-        if (isset($this->logger)) {
-            $this->logger->info($sql, $args);
+        list($sth, $err) = $this->prepareStatement($sql, $args);
+        if ($err !== null) {
+            return $err;
         }
-        $sth = $this->Conn->prepare($sql);
-        if ($sth === false) {
-            return new Gerror(1071, $this->errstr());
-        }
-        $result = @$sth->execute($args);
-        if ($result === false) {
-            return new Gerror(1072, self::errsmt($sth));
+        $err = $this->executeStatement($sth, $args);
+        if ($err !== null) {
+            return $err;
         }
 
         $this->Last_id = intval($this->Conn->lastInsertId());
@@ -61,17 +100,14 @@ class Dbi
 
     public function Do_sqls(string $sql, ...$args): ?Gerror
     {
-        if (isset($this->logger)) {
-            $this->logger->info($sql, $args);
-        }
-        $sth = $this->Conn->prepare($sql);
-        if ($sth === false) {
-            return new Gerror(1071, $this->errstr());
+        list($sth, $err) = $this->prepareStatement($sql, $args);
+        if ($err !== null) {
+            return $err;
         }
         foreach ($args as $item) {
-            $result = @$sth->execute($item);
-            if ($result === false) {
-                return new Gerror(1072, self::errsmt($sth));
+            $err = $this->executeStatement($sth, $item);
+            if ($err !== null) {
+                return $err;
             }
             $this->Last_id = intval($this->Conn->lastInsertId());
         }
@@ -111,20 +147,19 @@ class Dbi
 
     public function Select_sql(array &$lists, string $sql, ...$args): ?Gerror
     {
-        if (isset($this->logger)) {
-            $this->logger->info($sql, $args);
+        list($sth, $err) = $this->prepareStatement($sql, $args);
+        if ($err !== null) {
+            return $err;
         }
-        $sth = $this->Conn->prepare($sql);
-        if ($sth === false) {
-            return new Gerror(1071, $this->errstr());
-        }
-        $result = @$sth->execute($args);
-        if ($result === false) {
-            return new Gerror(1072, self::errsmt($sth));
+        $err = $this->executeStatement($sth, $args);
+        if ($err !== null) {
+            return $err;
         }
         $lists = $sth->fetchAll(\PDO::FETCH_ASSOC);
         if ($lists === false) {
-            return new Gerror(1073, self::errsmt($sth));
+            $err = new Gerror(1073, self::errsmt($sth));
+            $sth->closeCursor();
+            return $err;
         }
         $sth->closeCursor();
         return null;
@@ -132,16 +167,13 @@ class Dbi
 
     public function Select_sql_label(array &$lists, array $select_labels, string $sql, ...$args): ?Gerror
     {
-        if (isset($this->logger)) {
-            $this->logger->info($sql, $args);
+        list($sth, $err) = $this->prepareStatement($sql, $args, array(\PDO::ATTR_CURSOR => \PDO::CURSOR_SCROLL));
+        if ($err !== null) {
+            return $err;
         }
-        $sth = $this->Conn->prepare($sql, array(\PDO::ATTR_CURSOR => \PDO::CURSOR_SCROLL));
-        if ($sth == false) {
-            return new Gerror(1071, $this->errstr());
-        }
-        $result = @$sth->execute($args);
-        if ($result === false) {
-            return new Gerror(1072, self::errsmt($sth));
+        $err = $this->executeStatement($sth, $args);
+        if ($err !== null) {
+            return $err;
         }
         $is_map = count(array_filter(array_keys($select_labels), 'is_string')) > 0;
         $xs = array();
@@ -169,54 +201,44 @@ class Dbi
             // array_push only pushes references, push $labels directly makes it contain only the last item, many times
             array_push($lists, $item);
         }
-        $sth = null;
+        $sth->closeCursor();
         return null;
     }
 
     public function Do_proc(string $proc_name, ...$args): ?Gerror
     {
-        $n = sizeof($args);
-        $str = "CALL " . $proc_name . "(" . implode(',', array_fill(0, $n, '?'));
-        $str .= ")";
+        list($str) = $this->buildCallSql($proc_name, sizeof($args));
 
         return $this->Do_sql($str, ...$args);
     }
 
     public function Do_proc_label(array &$hash, array $names, string $proc_name, ...$args): ?Gerror
     {
-        $n = sizeof($args);
-        $str = "CALL " . $proc_name . "(" . implode(',', array_fill(0, $n, '?'));
-        $str_n = "@" . implode(", @", $names);
-        $str .= ", " . $str_n . ")";
+        list($str, $select) = $this->buildCallSql($proc_name, sizeof($args), $names);
 
         $err = $this->Do_sql($str, ...$args);
         if ($err != null) {
             return $err;
         }
-        return $this->Get_sql_label($hash, $names, "SELECT " . $str_n);
+        return $this->Get_sql_label($hash, $names, $select);
     }
 
     public function Select_proc_label(array &$lists, array $select_labels, string $proc_name, ...$args): ?Gerror
     {
-        $n = sizeof($args);
-        $str = "CALL " . $proc_name . "(" . implode(',', array_fill(0, $n, '?'));
-        $str .= ")";
+        list($str) = $this->buildCallSql($proc_name, sizeof($args));
 
         return $this->Select_sql_label($lists, $select_labels, $str, ...$args);
     }
 
     public function Select_do_proc_label(array &$lists, array $select_labels, array &$hash, array $names, string $proc_name, ...$args): ?Gerror
     {
-        $n = sizeof($args);
-        $str = "CALL " . $proc_name . "(" . implode(',', array_fill(0, $n, '?'));
-        $str_n = "@" . implode(", @", $names);
-        $str .= ", " . $str_n . ")";
+        list($str, $select) = $this->buildCallSql($proc_name, sizeof($args), $names);
 
         $err = $this->Select_sql_label($lists, $select_labels, $str, ...$args);
         if ($err != null) {
             return $err;
         }
 
-        return $this->Get_sql_label($hash, $names, "SELECT " . $str_n);
+        return $this->Get_sql_label($hash, $names, $select);
     }
 }

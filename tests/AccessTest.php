@@ -143,4 +143,26 @@ final class AccessTest extends TestCase
         $this->assertNull($err);
         $this->assertEquals("aaaaa", $gate->Decoded["email"]);
     }
+
+    public function testBearerTokenTakesPrecedenceOverCookie(): void
+    {
+        $config = json_decode(file_get_contents("conf/test.conf"));
+        $_SERVER["REQUEST_TIME"] = "0";
+        $_SERVER["REMOTE_ADDR"] = "192.168.29.30";
+
+        $issuer = new Access($config, "m", "json");
+        $cookieToken = $issuer->Signature(array("cookie-user", "bbbbb", "ccccc", "ddddd", "eeeee"));
+        $bearerToken = $issuer->Signature(array("aaa", "bbbbb", "ccccc", "ddddd", "eeeee"));
+
+        $_COOKIE = array("mc" => $cookieToken);
+        $_SERVER["HTTP_AUTHORIZATION"] = "Bearer " . $bearerToken;
+
+        $gate = new Access($config, "m", "json");
+        $err = $gate->Verify_cookie();
+
+        $this->assertNull($err);
+        $this->assertEquals("aaa", $gate->Decoded["email"]);
+        unset($_SERVER["HTTP_AUTHORIZATION"]);
+        $_COOKIE = array();
+    }
 }
