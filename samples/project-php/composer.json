@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "genelet/php": "dev-master"
+        "genelet/php": "dev-main || dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.6"

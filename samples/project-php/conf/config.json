@@ -6,7 +6,7 @@
     "Template" : "views",
     "Uploaddir": "var/upload",
 	"Pubrole"  : "p",
-	"Secret" : "aa5ad6d65a9f77faa1adaf154ee2c974735ccf57216279ded2fad99c5e004e40b2a0708c5095efeb8249652f596c9a8d8133",
+	"Secret" : "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
     "Log" : {
         "Filename": "var/log/debug.log",
         "Level": "info"
@@ -30,15 +30,15 @@
 			"Domain"  : "localhost",
 			"Duration": 86400,
 			"Max_age" : 86400,
-			"Secret"  : "001b0ca4aaeeb5a85f69f014d8f113cd4c419b87525da9d69bc77eaac7d1e84fb3c5b545a88285db9ee28f3da6b708bc052f",
-			"Coding"  : "77f9b3bbbf15c2b97bd131a57bf8ff81a35beadb7b0e835ff91f51b0df583bd50f36d15f1ecf72e51301c802023cfbb6de7a",
+			"Secret"  : "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",
+			"Coding"  : "222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222",
 			"Logout"  : "/",
 			"Issuers" : {
 				"db" : {
 					"Default" : true,
 					"Screen": 1,
 					"Credential" : ["login", "passwd", "direct", "ta"],
-					"Sql": "proc_peter_login",
+					"Sql": "proc_admin_login",
 					"Out_pars": ["a_id", "a_login"]
 				}
 			}

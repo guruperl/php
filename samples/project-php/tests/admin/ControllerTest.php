@@ -37,7 +37,7 @@ final class ControllerTest extends TestCase
 		$this->assertIsObject($resp);
 		$this->assertEquals(401, $resp->code);
 		$this->assertEquals('{"success":false,"error_code":1020,"error_string":"Login required."}', $resp->report());
-		$resp = $beacon->LOGIN(["login"=>"admin","passwd"=>"KZ2k8M]B","go_uri"=>"/"]);
+		$resp = $beacon->LOGIN(["login"=>"admin","passwd"=>"sample-admin-password","go_uri"=>"/"]);
 		$this->assertIsObject($resp);
 		$this->assertEquals(200, $resp->code);
 

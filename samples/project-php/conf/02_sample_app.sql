@@ -1,4 +1,4 @@
-DROP PROCEDURE IF EXISTS `proc_peter_login`;
+DROP PROCEDURE IF EXISTS `proc_admin_login`;
 DROP TABLE IF EXISTS `cars`;
 
 CREATE TABLE IF NOT EXISTS `cars` (
@@ -32,14 +32,14 @@ VALUES
   (2, 'Honda', 'Accord', 192, 1.5, 4, 10, 'Yes', 29, 37, 'Sedan', 'Second sample car row.', 'https://automobiles.honda.com/accord-sedan', 27295.00, NULL, NULL, NULL, NULL, NULL, 'Blue');
 
 INSERT INTO `admin` (`adminid`, `login`, `passwd`, `status`, `created`)
-VALUES ('SUPPORT', 'admin', SHA1(CONCAT('admin', 'KZ2k8M]B')), 'Yes', NOW())
+VALUES ('SUPPORT', 'admin', SHA1(CONCAT('admin', 'sample-admin-password')), 'Yes', NOW())
 ON DUPLICATE KEY UPDATE
   `adminid` = VALUES(`adminid`),
   `passwd` = VALUES(`passwd`),
   `status` = VALUES(`status`);
 
 DELIMITER //
-CREATE PROCEDURE `proc_peter_login`(
+CREATE PROCEDURE `proc_admin_login`(
   IN i_login varchar(255),
   IN i_passwd varchar(255),
   IN i_ip int unsigned,

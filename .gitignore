@@ -1,4 +1,11 @@
-composer.lock
-vendor
-debug.log
+/composer.lock
+/vendor/
+*.log
+/logs/
+/var/
 .phpunit.result.cache
+
+samples/project-php/composer.lock
+samples/project-php/vendor/
+samples/project-php/logs/
+samples/project-php/var/

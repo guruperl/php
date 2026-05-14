@@ -5,7 +5,7 @@ namespace Tabilet\Admin;
 ob_start();
 
 $beacon = new Beacon("a");
-$response = $beacon->LOGIN(["login"=>"admin", "passwd"=>"KZ2k8M]B", "provider"=>"db", "go_uri"=>"/"]);
+$response = $beacon->LOGIN(["login"=>"admin", "passwd"=>"sample-admin-password", "provider"=>"db", "go_uri"=>"/"]);
 if ($response->code !== 200) {
 	exit($response->code);
 }
