@@ -232,10 +232,30 @@ class Filter extends Access
 				}
 			}
 			$model->OTHER[$this->cache_url_name] = $this->script . "/" . $this->Role_name . "/" . $this->Component . "/" . $name . "." . $this->Tag_name;
-			$parts = explode("/", $_SERVER["REQUEST_URI"]);
-			$parts[3] = "json";
-			$model->OTHER[$this->json_url_name] = implode("/", $parts);
+			$model->OTHER[$this->json_url_name] = $this->jsonUrl($_SERVER["REQUEST_URI"]);
 		}
 		return null;
+	}
+
+	private function jsonUrl(string $uri): string
+	{
+		$parsed = parse_url($uri);
+		$path = isset($parsed["path"]) ? $parsed["path"] : "";
+		$prefix = $this->script . "/";
+		if (substr($path, 0, strlen($prefix)) === $prefix) {
+			$rest = substr($path, strlen($prefix));
+			$parts = explode("/", $rest);
+			if (sizeof($parts) >= 3) {
+				$parts[1] = "json";
+				$out = $prefix . implode("/", $parts);
+				if (isset($parsed["query"])) {
+					$out .= "?" . $parsed["query"];
+				}
+				return $out;
+			}
+		}
+		$parts = explode("/", $uri);
+		$parts[3] = "json";
+		return implode("/", $parts);
 	}
 }

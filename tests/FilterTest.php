@@ -186,4 +186,25 @@ final class FilterTest extends TestCase
         $this->assertEquals("aa", $list0["x"]);
         $this->assertEquals("bb", $list0["y"]);
     }
+
+    public function testFilterJsonUrlUsesConfiguredScriptPrefix(): void
+    {
+        $config = json_decode(file_get_contents("conf/test.conf"));
+        $config->Script = "/jenny/app.php";
+        $config->Pubrole = "p";
+        $_SERVER["REQUEST_METHOD"] = "GET";
+
+        $comp = self::init();
+        $_SERVER["REQUEST_URI"] = "/jenny/app.php/p/html/question?action=topics";
+        $filter = new Filter($comp, "topics", "question", $config, "p", "html");
+        $model = new \stdClass();
+        $model->ARGS = array();
+        $model->LISTS = array();
+        $model->OTHER = array();
+
+        $err = $filter->After($model);
+
+        $this->assertNull($err);
+        $this->assertEquals("/jenny/app.php/p/json/question?action=topics", $model->OTHER["json_url"]);
+    }
 }
