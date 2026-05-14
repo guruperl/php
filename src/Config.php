@@ -264,4 +264,8 @@ class Config
 		$chartag = $this->chartags[$tag_name];
 		return $chartag->case == 1;
 	}
+	public function Get_action_name(): string
+	{
+		return $this->action_name;
+	}
 }

@@ -37,11 +37,17 @@ class Controller extends Config
             }
         }
 
-        list($cache_type, $role_name, $tag_name, $comp_name, $action, $url_key, $err) = $this->getUrl();
-        if (isset($err)) {
-            $logger->info($err);
-            return new Response($err->error_code);
+        $context = RequestContext::fromGlobals($this);
+        if (isset($context->error)) {
+            $logger->info($context->error);
+            return new Response($context->error->error_code);
         }
+        $cache_type = $context->cache_type;
+        $role_name = $context->role;
+        $tag_name = $context->tag;
+        $comp_name = $context->component;
+        $action = $context->action;
+        $url_key = $context->url_key;
         $logger->info("role=>" . $role_name);
         $logger->info("tag=>" . $tag_name);
         $logger->info("comp=>" . $comp_name);
@@ -111,7 +117,7 @@ class Controller extends Config
                     header("Content-Type: application/json");
 					$def_provider = $filter->Get_provider();
 					if ($this->Is_oauth2($def_provider)) {
-						$t = new Oauth2(new Dbi($this->pdo, $this->logger), null, $role_name, $tag_name, $def_provider);
+						$t = new Oauth2(new Dbi($this->pdo, $this->logger), null, $c, $role_name, $tag_name, $def_provider);
 						$t->App_authorize();
 						header('WWW-Authenticate: Bearer realm="'.urlencode($t->Uri).'", , charset="UTF-8"');
 						header("Tabilet-Error: " . $def_provider);
@@ -217,102 +223,6 @@ class Controller extends Config
                 header("Access-Control-Allow-Headers: $value");
             }
         }
-    }
-
-    private function body_json(): void
-    {
-        $json_found = false;
-        $header_found = false;
-        $items = array();
-        if (function_exists('apache_request_headers')) {
-            $hs = apache_request_headers();
-            if (isset($hs["Content-Type"])) {
-                array_push($items, $hs["Content-Type"]);
-            }
-        }
-        if (isset($_SERVER["CONTENT_TYPE"])) {
-            array_push($items, $_SERVER["CONTENT_TYPE"]);
-        }
-        if (isset($_SERVER["HTTP_CONTENT_TYPE"])) {
-            array_push($items, $_SERVER["HTTP_CONTENT_TYPE"]);
-        }
-        if (!empty($items)) {
-            $header_found = true;
-            foreach ($items as $item) {
-                if ($item == "application/x-www-form-urlencoded" || $item == "multipart/form-data") {
-                    return;
-                }
-                if (strpos($item, 'json') !== false) {
-                    $json_found = true;
-                    break;
-                }
-            }
-        }
-        if ($json_found || $header_found == false) {
-            $content = file_get_contents('php://input');
-            if (!empty($content)) {
-                foreach (json_decode($content, true) as $k => $v) {
-                    $_REQUEST[$k] = $v;
-                }
-            }
-        }
-    }
-
-    // cache_type(1 for id, 2 others), role, tag, component, action, id, error
-    private function getUrl(): array
-    {
-        $length = strlen($this->script);
-        $url_obj = parse_url($_SERVER["REQUEST_URI"]);
-        $l_url = strlen($url_obj["path"]);
-        if ($l_url <= $length || substr($url_obj["path"], 0, $length + 1) !== $this->script . "/") {
-            return array(0, "", "", "", "", "", new Gerror(400));
-        }
-
-        $cache_type = 0;
-        $url_key = "";
-
-        $rest = substr($url_obj["path"], $length + 1);
-        $path_info = explode("/", $rest);
-        if (sizeof($path_info) == 4 && $_SERVER["REQUEST_METHOD"] == "GET") {
-            $url_key = array_pop($path_info);
-            $_SERVER["REQUEST_METHOD"] = "GET_item";
-        } elseif (sizeof($path_info) != 3) {
-            return array(0, "", "", "", "", "", new Gerror(400));
-        }
-
-        $arr = explode('.', $path_info[2]);
-        if (sizeof($arr) == 2) {
-            $role_name = $path_info[0];
-            $comp_name = $path_info[1];
-            $tag_name = $arr[1];
-            $action = $arr[0];
-            if (preg_match("/^[0-9]+$/", $arr[0])) {
-                $cache_type = 1;
-                $action = $this->default_actions["GET_item"];
-                $url_key = $arr[0];
-            } else {
-                $cache_type = 2;
-                $patterns = explode('_', $arr[0], 2);
-                if (sizeof($patterns) == 2) {
-                    $action = $patterns[0];
-                    $url_key = $patterns[1];
-                }
-            }
-            return array($cache_type, $role_name, $tag_name, $comp_name, $action, $url_key, null);
-        }
-
-        $role_name = $path_info[0];
-        $tag_name = $path_info[1];
-        $comp_name = $path_info[2];
-        if ($this->Is_json_tag($tag_name)) {
-            if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                $this->body_json();
-            }
-        }
-        $action = isset($_REQUEST[$this->action_name])
-            ? $_REQUEST[$this->action_name]
-            : $this->default_actions[$_SERVER["REQUEST_METHOD"]];
-        return array($cache_type, $role_name, $tag_name, $comp_name, $action, $url_key, null);
     }
 
     private function get_ticket($c, $role_name, $tag_name, $comp_name): Ticket
