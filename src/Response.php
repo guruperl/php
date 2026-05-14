@@ -45,7 +45,7 @@ class Response
 		return $this;
 	}
 
-	public function with_cached(string $body): Response
+	public function with_cached(): Response
 	{
 		$this->cached = true;
 		return $this;

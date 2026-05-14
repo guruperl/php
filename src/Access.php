@@ -125,11 +125,10 @@ class Access extends Base
                 $header = trim($_SERVER["Authorization"]);
             } else if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
                 $header = trim($_SERVER["HTTP_AUTHORIZATION"]);
-            } elseif (function_exists('apache_request_headers')) {
-                $requestHeaders = apache_request_headers();
+            } elseif ($requestHeaders = $this->requestHeaders()) {
                 $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
                 if (isset($requestHeaders['Authorization'])) {
-                    $headers = trim($requestHeaders['Authorization']);
+                    $header = trim($requestHeaders['Authorization']);
                 }
             }
             if ($header != null && substr($header, 0, 7) == 'Bearer ') {
@@ -184,5 +183,11 @@ class Access extends Base
         }
 
         return null;
+    }
+
+    protected function requestHeaders(): array
+    {
+        $headers = function_exists('apache_request_headers') ? apache_request_headers() : array();
+        return is_array($headers) ? $headers : array();
     }
 }

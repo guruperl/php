@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Genelet;
 
-use Psr\SimpleCache;
-
 class Cache extends Base implements \Psr\SimpleCache\CacheInterface
 {
     public $Action;
@@ -38,16 +36,19 @@ class Cache extends Base implements \Psr\SimpleCache\CacheInterface
 
     private function full($key): string
     {
-        $fn = ($this->ctype === 1) ? $key : empty($key) ? $this->Action : $this->Action . "_" . $key;
+        $fn = ($this->ctype === 1) ? $key : (empty($key) ? $this->Action : $this->Action . "_" . $key);
         return $this->getDir() . "/" . $fn . "." . $this->Tag_name;
     }
 
     public function has($key): bool
     {
         $path = $this->full($key);
+        if (!file_exists($path)) {
+            return false;
+        }
         $modified = filemtime($path);
         if ($modified === false) {
-            return $default; // file not found
+            return false;
         }
         return ($modified + $this->ttl) > $_SERVER["REQUEST_TIME"];
         // return file_exists($this->full($key));
@@ -71,18 +72,26 @@ class Cache extends Base implements \Psr\SimpleCache\CacheInterface
 
     public function delete($key)
     {
-        return !$this->has($key) || unlink($this->full($key));
+        $path = $this->full($key);
+        if (!file_exists($path)) {
+            return true;
+        }
+        return unlink($path);
     }
 
     public function clear()
     {
-        unlink($this->getDir());
+        $ok = true;
+        foreach (glob($this->getDir() . "/*") ?: [] as $path) {
+            $ok = $ok && unlink($path);
+        }
+        return $ok;
     }
 
     public function getMultiple($keys, $default = null)
     {
-        if (!is_array($keys) && !$keys instanceof Traversable) {
-            throw new InvalidArgumentException("keys must be either of type array or Traversable");
+        if (!is_array($keys) && !$keys instanceof \Traversable) {
+            throw new \InvalidArgumentException("keys must be either of type array or Traversable");
         }
         $values = [];
         foreach ($keys as $key) {
@@ -93,8 +102,8 @@ class Cache extends Base implements \Psr\SimpleCache\CacheInterface
 
     public function setMultiple($values, $ttl = null)
     {
-        if (!is_array($values) && !$values instanceof Traversable) {
-            throw new InvalidArgumentException("keys must be either of type array or Traversable");
+        if (!is_array($values) && !$values instanceof \Traversable) {
+            throw new \InvalidArgumentException("keys must be either of type array or Traversable");
         }
         $ok = true;
         foreach ($values as $key => $value) {
@@ -105,8 +114,8 @@ class Cache extends Base implements \Psr\SimpleCache\CacheInterface
 
     public function deleteMultiple($keys)
     {
-        if (!is_array($keys) && !$keys instanceof Traversable) {
-            throw new InvalidArgumentException("keys must be either of type array or Traversable");
+        if (!is_array($keys) && !$keys instanceof \Traversable) {
+            throw new \InvalidArgumentException("keys must be either of type array or Traversable");
         }
         $ok = true;
         foreach ($keys as $key) {

@@ -32,7 +32,7 @@ class Logger implements \Psr\Log\LoggerInterface
 		$this->current_level = $log_level;
 	}
 
-	public function screen_start(string $method, string $uri = '', string $ip, string $ua)
+	public function screen_start(string $method, string $uri, string $ip, string $ua)
 	{
 
 		return $this->warning("GENELET LOGGER {New Screen}{" . $_SERVER["REQUEST_TIME"] . "}{" . $ip . "}{" . $method . "}{" . $uri . "}{" . $ua . "}");
@@ -73,7 +73,9 @@ class Logger implements \Psr\Log\LoggerInterface
 
 	public function log($level, $msg, array $c = null): void
 	{
-		if ($level < self::LEVELS[$this->current_level]) {
+		$levelValue = $this->normalizeLevel($level);
+		$currentLevelValue = $this->normalizeLevel($this->current_level);
+		if ($levelValue < $currentLevelValue) {
 			return;
 		}
 		$t = gettype($msg);
@@ -85,7 +87,7 @@ class Logger implements \Psr\Log\LoggerInterface
 		foreach (self::LEVELS as $k => $v) {
 			$ref[$v] = $k;
 		}
-		$mix = "[" . $ref[$level] . " " . getmypid() . "]" . $this->current_msg . "\n";
+		$mix = "[" . $ref[$levelValue] . " " . getmypid() . "]" . $this->current_msg . "\n";
 		// Log to file
 		try {
 			$fh = fopen($this->filename, 'a');
@@ -134,5 +136,19 @@ class Logger implements \Psr\Log\LoggerInterface
 	private function logAtThisLevel(string $level): bool
 	{
 		return self::LEVELS[$level] <= self::LEVELS[$this->current_level];
+	}
+
+	private function normalizeLevel($level): int
+	{
+		if (is_int($level)) {
+			if (array_search($level, self::LEVELS, true) === false) {
+				throw new \InvalidArgumentException("Unknown log level: " . $level);
+			}
+			return $level;
+		}
+		if (is_string($level) && isset(self::LEVELS[$level])) {
+			return self::LEVELS[$level];
+		}
+		throw new \InvalidArgumentException("Unknown log level: " . (string) $level);
 	}
 }

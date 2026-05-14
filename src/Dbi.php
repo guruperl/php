@@ -49,7 +49,7 @@ class Dbi
         if ($sth === false) {
             return new Gerror(1071, $this->errstr());
         }
-        $result = $sth->execute($args);
+        $result = @$sth->execute($args);
         if ($result === false) {
             return new Gerror(1072, self::errsmt($sth));
         }
@@ -69,7 +69,7 @@ class Dbi
             return new Gerror(1071, $this->errstr());
         }
         foreach ($args as $item) {
-            $result = $sth->execute($item);
+            $result = @$sth->execute($item);
             if ($result === false) {
                 return new Gerror(1072, self::errsmt($sth));
             }
@@ -118,9 +118,9 @@ class Dbi
         if ($sth === false) {
             return new Gerror(1071, $this->errstr());
         }
-        $result = $sth->execute($args);
+        $result = @$sth->execute($args);
         if ($result === false) {
-            return new Gerror(1072, $this->errstr());
+            return new Gerror(1072, self::errsmt($sth));
         }
         $lists = $sth->fetchAll(\PDO::FETCH_ASSOC);
         if ($lists === false) {
@@ -139,9 +139,9 @@ class Dbi
         if ($sth == false) {
             return new Gerror(1071, $this->errstr());
         }
-        $result = $sth->execute($args);
+        $result = @$sth->execute($args);
         if ($result === false) {
-            return new Gerror(1072, $this->errstr());
+            return new Gerror(1072, self::errsmt($sth));
         }
         $is_map = count(array_filter(array_keys($select_labels), 'is_string')) > 0;
         $xs = array();

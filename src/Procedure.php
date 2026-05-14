@@ -52,7 +52,7 @@ class Procedure extends Ticket
     {
         $issuer = $this->Get_issuer();
         $cred = $issuer->credential;
-        if ($ticket->Is_admin()) {
+        if ($this->Is_admin()) {
             return new Gerror(1038);
         }
         $err = $this->Authenticate_as($login);

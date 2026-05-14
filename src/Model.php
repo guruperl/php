@@ -195,7 +195,7 @@ class Model extends Crud
     public function properValue(string $v, array $extra = null): ?array
     {
         $ARGS = $this->ARGS;
-        if (isset($extra[$v])) {
+        if ($extra !== null && isset($extra[$v])) {
             return (gettype($extra[$v]) == "array") ? $extra[$v] : [$extra[$v]];
         } elseif (isset($ARGS[$v])) {
             return (gettype($ARGS[$v]) == "array") ? $ARGS[$v] : [$ARGS[$v]];
@@ -208,13 +208,13 @@ class Model extends Crud
         $ARGS = $this->ARGS;
         $outs = array();
         foreach ($vs as $v) {
-            if (isset($extra[$v])) {
+            if ($extra !== null && isset($extra[$v])) {
                 array_push($outs, $extra[$v]);
-            }
-            if (isset($ARGS[$v])) {
+            } elseif (isset($ARGS[$v])) {
                 array_push($outs, $ARGS[$v]);
+            } else {
+                return null;
             }
-            return null;
         }
 
         return $outs;
@@ -397,7 +397,7 @@ class Model extends Crud
 
         $this->LISTS = array($field_values);
 
-        return $this->process_after("Update", ...$extra);
+        return $this->process_after("update", ...$extra);
     }
 
     public function delete(...$extra): ?Gerror

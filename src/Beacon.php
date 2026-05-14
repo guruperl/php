@@ -29,7 +29,10 @@ class Beacon extends Controller
 		if (isset($headers)) {
 			$this->headers = $headers;
 		} else {
-			$this->headers = ["Content-Type" => "application/x-www-form-urlencoded"];
+			$this->headers = ["Content-Type" => "application/x-www-form-urlencoded", "Cookie" => []];
+		}
+		if (!isset($this->headers["Cookie"])) {
+			$this->headers["Cookie"] = [];
 		}
 	}
 
@@ -60,20 +63,22 @@ class Beacon extends Controller
 			unset($_COOKIE["SET_COOKIE"]);
 		} else {
 			foreach ($cookies as $k => $v) {
-				if ($k == "Location") {
-					$this->redirect = $v;
+				if (stripos($v, "Location: ") === 0) {
+					$this->redirect = substr($v, 10);
 				}
-				if ($k == "Set-Cookie") {
-					$obj = http_parse_cookie($v);
-					foreach ($obj->{"cookies"} as $co => $va) {
-						$this->headers["Cookie"][$co] = $va;
+				if (stripos($v, "Set-Cookie: ") === 0) {
+					$cookie = substr($v, 12);
+					$parts = explode(";", $cookie, 2);
+					$item = explode("=", $parts[0], 2);
+					if (sizeof($item) === 2) {
+						$this->headers["Cookie"][$item[0]] = urldecode($item[1]);
 					}
 				}
 			}
 		}
 	}
 
-	public function get_mock(string $obj, string $query = null): ?Gerror
+	public function get_mock(string $obj, string $query = null): Response
 	{
 		$this->refresh($obj, $query);
 		$_SERVER["REQUEST_METHOD"] = "GET";
@@ -83,7 +88,7 @@ class Beacon extends Controller
 		return $err;
 	}
 
-	public function post_mock(string $obj, array $data): ?Gerror
+	public function post_mock(string $obj, array $data): Response
 	{
 		$this->refresh($obj);
 		foreach ($data as $k => $v) {
@@ -96,7 +101,7 @@ class Beacon extends Controller
 		return $err;
 	}
 
-	public function LOGIN(array $data): ?Gerror
+	public function LOGIN(array $data): Response
 	{
 		return $this->post_mock($this->login_name, $data);
 	}
