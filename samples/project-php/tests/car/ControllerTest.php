@@ -1,8 +1,8 @@
 <?php
 declare (strict_types = 1);
-namespace Tabilet\Car\Tests;
+namespace TavolaSample\Car\Tests;
 
-use Tabilet\Car\Beacon;
+use TavolaSample\Car\Beacon;
 use PHPUnit\Framework\TestCase;
 
 final class ControllerTest extends TestCase

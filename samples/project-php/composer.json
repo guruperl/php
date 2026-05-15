@@ -31,9 +31,9 @@
     },
     "autoload": {
         "psr-4" : {
-            "Tabilet\\" : "src/",
-            "Tabilet\\Admin\\" : "src/admin/",
-            "Tabilet\\Car\\" : "src/car/"
+            "TavolaSample\\" : "src/",
+            "TavolaSample\\Admin\\" : "src/admin/",
+            "TavolaSample\\Car\\" : "src/car/"
         }
     }
 }

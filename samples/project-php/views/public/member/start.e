@@ -1,12 +1,12 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-  <title>Tabilet, build remote data service for mobile developers</title>
+  <title>Tavola sample application</title>
   <meta name="description" content="remote data service for tablet and mobile applications" />
-  <meta name="keywords" content="tablet, mobile, app, apps, tabilet, web serice" />
+  <meta name="keywords" content="tavola, sample, generated app, api service" />
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
   <link rel="stylesheet" type="text/css" href="/style/style.css" title="style" />
-  <link rel="stylesheet" type="text/css" href="/style/tabilet.css" title="style" />
+  <link rel="stylesheet" type="text/css" href="/style/tavola.css" title="style" />
 </head>
 
 <body>

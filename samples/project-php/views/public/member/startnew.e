@@ -1,5 +1,5 @@
 {{ include("start.e") }}
-        <h2>New Tabilet Application</h2>
+        <h2>New Tavola Sample Application</h2>
         <p class="lead">Please fill in the form and submit.</p>
 
           <form class="needs-validation" action="member" method="post">

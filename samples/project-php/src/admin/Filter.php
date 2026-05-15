@@ -1,11 +1,11 @@
 <?php
 declare (strict_types = 1);
 
-namespace Tabilet\Admin;
+namespace TavolaSample\Admin;
 
-use Tabilet;
+use TavolaSample;
 
-class Filter extends \Tabilet\Filter
+class Filter extends \TavolaSample\Filter
 {
 
 public function Preset() : ?\Genelet\Gerror  {

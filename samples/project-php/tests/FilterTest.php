@@ -1,10 +1,10 @@
 <?php
 declare (strict_types = 1);
-namespace Tabilet\Tests;
+namespace TavolaSample\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Tabilet\Application;
-use Tabilet\Filter;
+use TavolaSample\Application;
+use TavolaSample\Filter;
 
 final class FilterTest extends TestCase
 {

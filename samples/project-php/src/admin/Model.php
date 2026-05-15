@@ -1,8 +1,8 @@
 <?php
 declare (strict_types = 1);
 
-namespace Tabilet\Admin;
-use Tabilet;
+namespace TavolaSample\Admin;
+use TavolaSample;
 
-class Model extends \Tabilet\Model
+class Model extends \TavolaSample\Model
 {};

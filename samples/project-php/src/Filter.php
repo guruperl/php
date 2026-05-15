@@ -1,7 +1,7 @@
 <?php
 declare (strict_types = 1);
 
-namespace Tabilet;
+namespace TavolaSample;
 use Genelet;
 
 class Filter extends \Genelet\Filter

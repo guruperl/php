@@ -1,8 +1,8 @@
 <?php
 declare (strict_types = 1);
-namespace Tabilet\Admin\Tests;
+namespace TavolaSample\Admin\Tests;
 
-use Tabilet\Admin\Beacon;
+use TavolaSample\Admin\Beacon;
 use PHPUnit\Framework\TestCase;
 
 final class ControllerTest extends TestCase

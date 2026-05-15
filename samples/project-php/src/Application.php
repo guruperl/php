@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Tabilet;
+namespace TavolaSample;
 
 use Genelet\Controller;
 use Genelet\Logger;
@@ -54,7 +54,7 @@ final class Application
         $storage = [];
         foreach (self::COMPONENTS as $item) {
             $jsons[$item] = json_decode(file_get_contents(__DIR__ . "/$item/component.json"));
-            $class = "\\Tabilet\\" . ucfirst($item) . "\\Model";
+            $class = "\\TavolaSample\\" . ucfirst($item) . "\\Model";
             $storage[$item] = new $class($pdo, $jsons[$item]);
         }
 

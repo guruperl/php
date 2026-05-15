@@ -1,6 +1,6 @@
 <?php
 declare (strict_types = 1);
-namespace Tabilet\Admin;
+namespace TavolaSample\Admin;
 
 ob_start();
 

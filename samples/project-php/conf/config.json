@@ -1,6 +1,6 @@
 {
     "Document_root" : "www",
-    "Project"  : "Tabilet",
+    "Project"  : "TavolaSample",
 	"Server_url" : "http://localhost",
     "Script"   : "/app.php",
     "Template" : "views",

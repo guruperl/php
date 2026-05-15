@@ -1,11 +1,11 @@
 <?php
 declare (strict_types = 1);
 
-namespace Tabilet\Car;
+namespace TavolaSample\Car;
 
-use Tabilet;
+use TavolaSample;
 
-class Beacon extends \Tabilet\Beacon
+class Beacon extends \TavolaSample\Beacon
 {
 	public function GET(string $query=null) {
 		return parent::get_mock("car", $query);

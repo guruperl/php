@@ -1,7 +1,7 @@
 <?php
 declare (strict_types = 1);
 
-namespace Tabilet\Car;
+namespace TavolaSample\Car;
 
-class Model extends \Tabilet\Model
+class Model extends \TavolaSample\Model
 {};

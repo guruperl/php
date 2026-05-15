@@ -7,7 +7,7 @@ The sample uses the framework in `../..` as the source of truth through a Compos
 ## Layout
 
 - `conf/` - application config and MySQL seed SQL
-- `src/` - Tabilet application models, filters, and test beacons
+- `src/` - Tavola sample application models, filters, and test beacons
 - `tests/` - sample application tests
 - `views/` - server-rendered templates
 - `www/` - PHP entrypoints, Vue components, and browser client assets
@@ -34,4 +34,4 @@ composer test
 
 The default `conf/config.json` uses database `demo2020` with user `genelet_sample`. For Docker tests, the config is overridden with `GENELET_SAMPLE_DB_DSN`, `GENELET_SAMPLE_DB_USER`, and `GENELET_SAMPLE_DB_PASSWORD`.
 
-Runtime paths in `conf/config.json` are relative to this sample directory and are normalized by `Tabilet\Application`. Config values can also be set to `${ENV_NAME}` placeholders; the sample `Application` expands them at startup.
+Runtime paths in `conf/config.json` are relative to this sample directory and are normalized by `TavolaSample\Application`. Config values can also be set to `${ENV_NAME}` placeholders; the sample `Application` expands them at startup.

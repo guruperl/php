@@ -1,7 +1,7 @@
 <?php
 declare (strict_types = 1);
 
-namespace Tabilet;
+namespace TavolaSample;
 
 class Beacon extends \Genelet\Beacon
 {
