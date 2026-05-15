@@ -125,12 +125,12 @@ class Controller extends Config
 						$t = new Oauth2(new Dbi($this->pdo, $this->logger), null, $c, $role_name, $tag_name, $def_provider);
 						$t->App_authorize();
 						header('WWW-Authenticate: Bearer realm="'.urlencode($t->Uri).'", , charset="UTF-8"');
-						header("Tabilet-Error: " . $def_provider);
-						header("Tabilet-Error-Description: " . $t->Uri);
+							header("Tavola-Error: " . $def_provider);
+							header("Tavola-Error-Description: " . $t->Uri);
 					} else {
 						header('WWW-Authenticate: Bearer realm="' . $filter->script . "/" . $filter->Role_name . "/" . $filter->Tag_name . "/" . $filter->login_name . '", charset="UTF-8"');
-						header("Tabilet-Error: " . $err->error_code);
-						header("Tabilet-Error-Description: " . $err->error_string);
+							header("Tavola-Error: " . $err->error_code);
+							header("Tavola-Error-Description: " . $err->error_string);
 					}
                     $response->code = 401;
                     return $response->with_error($err);
@@ -268,8 +268,8 @@ class Controller extends Config
         } elseif ($err !== null) {
             $this->logger->info($err);
             if ($is_json) {
-                header("Tabilet-Error: " . $err->error_code);
-                header("Tabilet-Error-Description: " . $err->error_string);
+                header("Tavola-Error: " . $err->error_code);
+                header("Tavola-Error-Description: " . $err->error_string);
                 $response->code = 400;
                 return $response->with_error($err);
             }
